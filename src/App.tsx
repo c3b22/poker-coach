@@ -3,12 +3,13 @@ import type { ReactNode } from 'react'
 import { Drill } from './components/Drill'
 import { EquityCalculator } from './components/EquityCalculator'
 import { Lessons } from './components/Lessons'
+import { Play } from './components/Play'
 import { PotOddsCalculator } from './components/PotOddsCalculator'
 import { RangeViewer } from './components/RangeViewer'
 import type { Topic } from './poker/drill'
 import './App.css'
 
-type Tab = 'lessons' | 'drill' | 'tools'
+type Tab = 'lessons' | 'drill' | 'play' | 'tools'
 
 const icon = (d: ReactNode) => (
   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -34,6 +35,17 @@ const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
       <>
         <path d="M5 4h11l3 3v13H5z" />
         <path d="m9 13 2 2 4-4.5" />
+      </>,
+    ),
+  },
+  {
+    id: 'play',
+    label: 'เล่นจริง',
+    icon: icon(
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3.5" />
+        <path d="M12 4v4M12 16v4M4 12h4M16 12h4" />
       </>,
     ),
   },
@@ -85,6 +97,7 @@ export default function App() {
       <main className="app">
         {tab === 'lessons' && <Lessons onPractice={practice} />}
         {tab === 'drill' && <Drill key={drillKey} initialFilter={drillTopic} />}
+        {tab === 'play' && <Play />}
         {tab === 'tools' && (
           <>
             <EquityCalculator />

@@ -18,7 +18,7 @@ export const TOPIC_LABEL: Record<Topic, string> = {
   postflop: 'Postflop: c-bet, board, value/bluff',
 }
 
-const CATEGORY_LABELS = [
+export const CATEGORY_LABELS = [
   'High card',
   'One pair',
   'Two pair',
