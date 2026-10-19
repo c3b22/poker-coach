@@ -8,10 +8,10 @@ type Filter = Topic | 'all'
 
 const accuracy = (correct: number, total: number) => (total ? `${Math.round((correct / total) * 100)}%` : '–')
 
-export function Drill() {
+export function Drill({ initialFilter = 'all' }: { initialFilter?: Filter }) {
   const [progress, setProgress] = useState(() => loadProgress(localStorage))
-  const [filter, setFilter] = useState<Filter>('all')
-  const [question, setQuestion] = useState(() => nextQuestion(progress, 'all', Math.random))
+  const [filter, setFilter] = useState<Filter>(initialFilter)
+  const [question, setQuestion] = useState(() => nextQuestion(progress, initialFilter, Math.random))
   const [answered, setAnswered] = useState<number | null>(null)
 
   useEffect(() => saveProgress(localStorage, progress), [progress])
@@ -56,11 +56,33 @@ export function Drill() {
 
       <p className="muted">{TOPIC_LABEL[question.topic]}</p>
       <p className="prompt">{question.prompt}</p>
-      {question.cards && (
-        <div className="hand" aria-label="ไพ่ในมือคุณ">
-          {question.cards.map((c) => (
-            <PlayingCard key={c} code={c} />
-          ))}
+      {(question.board || question.cards) && (
+        <div className="table">
+          {question.board && (
+            <div className="hand" aria-label="Board">
+              {question.board.map((c) => (
+                <PlayingCard key={c} code={c} />
+              ))}
+            </div>
+          )}
+          <div className="hands">
+            {question.cards && (
+              <div className="hand" aria-label="ไพ่ในมือคุณ">
+                <span className="who">คุณ</span>
+                {question.cards.map((c) => (
+                  <PlayingCard key={c} code={c} />
+                ))}
+              </div>
+            )}
+            {question.villainCards && (
+              <div className="hand villain" aria-label="ไพ่ของคู่ต่อสู้">
+                <span className="who">คู่ต่อสู้</span>
+                {question.villainCards.map((c) => (
+                  <PlayingCard key={c} code={c} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

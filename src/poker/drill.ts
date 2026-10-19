@@ -1,14 +1,32 @@
+import { POSTFLOP_QUESTIONS } from '../data/postflop-questions'
+import { cardToString, fullDeck, parseCards } from './cards'
+import { evaluate, categoryOf } from './evaluator'
 import { facingOpenSpots, preflopAction, rfiRange, RFI_POSITIONS } from './preflop'
 import { comboCount, handClassGrid } from './range'
 import type { HandClass } from './range'
 
-export type Topic = 'rfi' | 'facing-open' | 'pot-odds'
-export const TOPICS: readonly Topic[] = ['rfi', 'facing-open', 'pot-odds']
+export type Topic = 'basics' | 'rfi' | 'facing-open' | 'pot-odds' | 'postflop'
+/** In curriculum order. */
+export const TOPICS: readonly Topic[] = ['basics', 'rfi', 'facing-open', 'pot-odds', 'postflop']
 export const TOPIC_LABEL: Record<Topic, string> = {
+  basics: 'Hand ranking และ showdown',
   rfi: 'Preflop: เปิดเกม (RFI)',
   'facing-open': 'Preflop: เจอคน raise',
   'pot-odds': 'Pot odds และ outs',
+  postflop: 'Postflop: c-bet, board, value/bluff',
 }
+
+const CATEGORY_LABELS = [
+  'High card',
+  'One pair',
+  'Two pair',
+  'Three of a kind',
+  'Straight',
+  'Flush',
+  'Full house',
+  'Four of a kind',
+  'Straight flush',
+]
 
 /** A fully serialisable question, so missed ones can be stored and replayed. */
 export interface Question {
@@ -17,6 +35,10 @@ export interface Question {
   prompt: string
   /** Hole cards to show, e.g. ['As', 'Kd']. */
   cards?: string[]
+  /** Opponent's cards when they are shown down. */
+  villainCards?: string[]
+  /** Community cards to show (3 to 5). */
+  board?: string[]
   choices: string[]
   correct: number
   explanation: string
@@ -53,12 +75,70 @@ export function drawEquity(outs: number, street: 'flop' | 'turn'): number {
 
 export function generateQuestion(topic: Topic, rng: Rng): Question {
   switch (topic) {
+    case 'basics':
+      return rng() < 0.5 ? handNameQuestion(rng) : showdownQuestion(rng)
+    case 'postflop':
+      return pick(POSTFLOP_QUESTIONS, rng)
     case 'rfi':
       return rfiQuestion(rng)
     case 'facing-open':
       return facingOpenQuestion(rng)
     case 'pot-odds':
       return potOddsQuestion(rng)
+  }
+}
+
+/** Fisher-Yates shuffle of a copy. */
+function shuffled<T>(items: readonly T[], rng: Rng): T[] {
+  const a = items.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const dealCards = (n: number, rng: Rng) => shuffled(fullDeck(), rng).slice(0, n).map(cardToString)
+
+function handNameQuestion(rng: Rng): Question {
+  const [h1, h2, ...board] = dealCards(7, rng)
+  const category = categoryOf(evaluate(parseCards([h1, h2, ...board].join(' '))))
+  const wrong = shuffled(
+    CATEGORY_LABELS.filter((_, i) => i !== category),
+    rng,
+  ).slice(0, 3)
+  const choices = shuffled([CATEGORY_LABELS[category], ...wrong], rng)
+  return {
+    id: `basics|name|${h1}${h2}|${board.join('')}`,
+    topic: 'basics',
+    prompt: 'ไพ่ 5 ใบที่ดีที่สุดของคุณ (จากไพ่ในมือ 2 ใบ + board 5 ใบ) เป็น hand อะไร?',
+    cards: [h1, h2],
+    board,
+    choices,
+    correct: choices.indexOf(CATEGORY_LABELS[category]),
+    explanation: `ไพ่ทั้งเจ็ดใบรวมกันได้ ${CATEGORY_LABELS[category]} ซึ่งเป็น hand ที่ดีที่สุดที่ทำได้`,
+    meta: { kind: 'hand-name', cards: [h1, h2, ...board].join(' ') },
+  }
+}
+
+function showdownQuestion(rng: Rng): Question {
+  const [h1, h2, v1, v2, ...board] = dealCards(9, rng)
+  const boardCards = parseCards(board.join(' '))
+  const hero = evaluate([...parseCards(`${h1} ${h2}`), ...boardCards])
+  const villain = evaluate([...parseCards(`${v1} ${v2}`), ...boardCards])
+  const choices = ['คุณชนะ', 'เสมอ (split pot)', 'คู่ต่อสู้ชนะ']
+  const correct = hero > villain ? 0 : hero === villain ? 1 : 2
+  return {
+    id: `basics|showdown|${h1}${h2}|${v1}${v2}|${board.join('')}`,
+    topic: 'basics',
+    prompt: 'Showdown: ไพ่ครบทั้ง 5 ใบบน board แล้ว ใครชนะ?',
+    cards: [h1, h2],
+    villainCards: [v1, v2],
+    board,
+    choices,
+    correct,
+    explanation: `คุณได้ ${CATEGORY_LABELS[categoryOf(hero)]} ส่วนคู่ต่อสู้ได้ ${CATEGORY_LABELS[categoryOf(villain)]}${hero === villain ? ' ไพ่ 5 ใบที่ดีที่สุดเท่ากัน จึงแบ่ง pot' : ''}`,
+    meta: { kind: 'showdown', hero: `${h1} ${h2}`, villain: `${v1} ${v2}`, board: board.join(' ') },
   }
 }
 

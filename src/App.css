@@ -265,3 +265,256 @@ select,
 header nav {
   margin-top: 12px;
 }
+
+/* ---------- table / hands ---------- */
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.table .hand {
+  margin-bottom: 0;
+}
+
+.hands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.hand {
+  align-items: flex-end;
+}
+
+.who {
+  align-self: center;
+  min-width: 4.5em;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hand.villain .card {
+  opacity: 0.92;
+}
+
+/* ---------- lessons ---------- */
+.lesson {
+  border: 1px solid #2f6b57;
+  border-radius: 10px;
+  margin-top: 10px;
+  background: var(--felt-deep);
+}
+
+.lesson h3 {
+  margin: 0;
+}
+
+.lesson-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.lesson-head .muted {
+  font-weight: 400;
+  margin: 0;
+}
+
+.lesson.open {
+  border-color: var(--accent);
+}
+
+.lesson-body {
+  padding: 0 14px 14px;
+}
+
+.lesson-body h4 {
+  margin: 14px 0 4px;
+  color: var(--accent);
+}
+
+.lesson-body p {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.lesson-body .primary {
+  margin-top: 14px;
+}
+
+/* ---------- equity calculator ---------- */
+.eq-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.panel h3 {
+  margin: 12px 0 6px;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.slots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.slot {
+  padding: 2px;
+  border: 2px dashed #2f6b57;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  min-width: 60px;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot.picked {
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.slot-empty {
+  color: var(--muted);
+  font-size: 0.7rem;
+  padding: 0 4px;
+}
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 2px;
+  margin: 16px 0;
+}
+
+.pick-card {
+  padding: 6px 0;
+  border: 0;
+  border-radius: 3px;
+  background: #f7f7f2;
+  color: #1c1c1c;
+  font-weight: 700;
+  font-size: clamp(0.55rem, 1.9vw, 0.8rem);
+  cursor: pointer;
+}
+
+.pick-card.red {
+  color: #c0392b;
+}
+
+.pick-card:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.eq-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.bar {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--felt-deep);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+}
+
+.bar-fill.hero {
+  background: var(--call);
+}
+
+.bar-fill.villain {
+  background: var(--raise);
+}
+
+/* ---------- pot odds calculator ---------- */
+input[type='number'] {
+  font: inherit;
+  width: 5.5em;
+  color: var(--ink);
+  background: var(--felt-deep);
+  border: 1px solid #2f6b57;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.calc-out {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+/* ---------- shared polish ---------- */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.primary:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 12px;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .card {
+    width: 44px;
+    height: 64px;
+  }
+
+  .card-rank {
+    font-size: 1.1rem;
+  }
+
+  .card-suit {
+    font-size: 1.25rem;
+  }
+
+  .slot {
+    min-width: 48px;
+    min-height: 68px;
+  }
+
+  .choice,
+  .primary {
+    flex: 1 1 auto;
+  }
+}
+
+.pick-card {
+  min-height: 40px;
+}

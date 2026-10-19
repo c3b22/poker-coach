@@ -30,7 +30,7 @@ const DECAY = 0.5
 const DROP_BELOW = 0.75
 
 export const emptyProgress = (): Progress => ({
-  stats: { rfi: { correct: 0, total: 0 }, 'facing-open': { correct: 0, total: 0 }, 'pot-odds': { correct: 0, total: 0 } },
+  stats: Object.fromEntries(TOPICS.map((t) => [t, { correct: 0, total: 0 }])) as Record<Topic, TopicStats>,
   missed: [],
 })
 
@@ -74,7 +74,7 @@ export function loadProgress(store: KeyValueStore): Progress {
     const raw = store.getItem(STORAGE_KEY)
     if (!raw) return emptyProgress()
     const parsed: unknown = JSON.parse(raw)
-    return isProgress(parsed) ? parsed : emptyProgress()
+    return isProgress(parsed) ? withAllTopics(parsed) : emptyProgress()
   } catch {
     return emptyProgress()
   }
@@ -88,13 +88,20 @@ export function saveProgress(store: KeyValueStore, progress: Progress): void {
   }
 }
 
+/** Progress saved before a topic existed has no stats for it; start those at zero. */
+function withAllTopics(p: Progress): Progress {
+  return { ...p, stats: { ...emptyProgress().stats, ...p.stats } }
+}
+
 function isProgress(x: unknown): x is Progress {
   if (typeof x !== 'object' || x === null) return false
   const { stats, missed } = x as { stats?: unknown; missed?: unknown }
   if (typeof stats !== 'object' || stats === null || !Array.isArray(missed)) return false
   const s = stats as Record<string, Partial<TopicStats> | undefined>
+  const validStat = (t: Topic) => typeof s[t]?.correct === 'number' && typeof s[t]?.total === 'number'
   return (
-    TOPICS.every((t) => typeof s[t]?.correct === 'number' && typeof s[t]?.total === 'number') &&
+    TOPICS.every((t) => s[t] === undefined || validStat(t)) &&
+    Object.keys(s).length > 0 &&
     missed.every((m) => typeof m?.weight === 'number' && typeof m?.question?.id === 'string')
   )
 }
