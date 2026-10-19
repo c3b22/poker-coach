@@ -1066,3 +1066,179 @@ button:disabled {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ---------- review ---------- */
+.rv {
+  margin-top: 20px;
+}
+
+.rv h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.rv-summary {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--marker-soft);
+  border: 1px solid var(--marker);
+}
+
+.rv-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-item {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-left-width: 6px;
+}
+
+.rv-good { border-left-color: var(--right); }
+.rv-marginal { border-left-color: #c79a00; background: var(--marker-soft); }
+.rv-mistake { border-left-color: var(--raise); background: var(--wrong-soft); }
+.rv-ungraded { border-left-color: var(--line-strong); background: var(--sheet-dim); }
+
+.rv-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.rv-badge {
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.rv-good .rv-badge { color: var(--right); }
+.rv-marginal .rv-badge { color: #7a5c00; }
+.rv-mistake .rv-badge { color: var(--raise); }
+.rv-ungraded .rv-badge { color: var(--muted); }
+
+.rv-pot {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.rv-cards {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+
+.rv-cards .card {
+  zoom: 0.72;
+}
+
+.rv-sep {
+  width: 10px;
+}
+
+.rv-line,
+.rv-why,
+.rv-cat,
+.rv-ev {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.rv-cat {
+  font-size: 0.85rem;
+}
+
+.rv-ev {
+  font-weight: 700;
+}
+
+.rv-note {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+}
+
+/* ---------- play history ---------- */
+.seg + .ph,
+.seg + .pa-toggle {
+  margin-top: 16px;
+}
+
+.ph h3 {
+  margin: 20px 0 8px;
+}
+
+.ph-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ph-cats {
+  margin: 0;
+  padding-left: 22px;
+  line-height: 1.8;
+}
+
+.ph-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ph-list li {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+}
+
+.ph-list li.open {
+  border-color: var(--ink);
+}
+
+.ph-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.ph-row .rv-cards {
+  margin: 0;
+}
+
+.ph-neg {
+  color: var(--raise);
+}
+
+.ph-list .rv {
+  margin: 0;
+  padding: 0 12px 12px;
+}
+
+.ph-clear {
+  margin-top: 20px;
+}

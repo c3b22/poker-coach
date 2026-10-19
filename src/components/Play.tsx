@@ -3,8 +3,13 @@ import { mulberry32 } from '../poker/equity'
 import { chooseAction } from '../poker/play/bot'
 import { START_STACK, applyAction, newHand, SEATS } from '../poker/play/engine'
 import type { Action, HandState } from '../poker/play/engine'
+import { clearPlayData, loadPlayData, makeHandRecord, recordHand, savePlayData } from '../poker/play/playHistory'
+import { reviewHand } from '../poker/play/review'
+import type { HandReview } from '../poker/play/review'
 import { ActionBar } from './play/ActionBar'
 import { HERO, bb, describeActions, seatName } from './play/format'
+import { PlayHistory } from './play/PlayHistory'
+import { ReviewPanel } from './play/ReviewPanel'
 import { TableView } from './play/TableView'
 
 const BOT_DELAY_MS = 600
@@ -29,12 +34,18 @@ function readFlag(key: string): boolean {
   }
 }
 
+type View = 'table' | 'history'
+
 export function Play() {
+  const [view, setView] = useState<View>('table')
   const [handNo, setHandNo] = useState(0)
   const [hand, setHand] = useState(() => dealHand(0))
   const [session, setSession] = useState({ hands: 0, net: 0 })
   const [showOdds, setShowOdds] = useState(() => readFlag(ODDS_KEY))
+  const [data, setData] = useState(() => loadPlayData(localStorage))
+  const [review, setReview] = useState<HandReview | null>(null)
   const counted = useRef<number | null>(null)
+  const reviewed = useRef<number | null>(null)
 
   // Bots act one at a time with a short pause so the hand can be followed.
   useEffect(() => {
@@ -51,10 +62,27 @@ export function Play() {
     setSession((s) => ({ hands: s.hands + 1, net: s.net + net }))
   }, [hand])
 
+  // Review the finished hand once, after the result has painted, and keep it in the history.
+  useEffect(() => {
+    if (!hand.result || reviewed.current === hand.seed) return
+    const t = setTimeout(() => {
+      reviewed.current = hand.seed
+      const r = reviewHand(hand, HERO)
+      setReview(r)
+      setData((d) => {
+        const next = recordHand(d, makeHandRecord(hand, r, HERO, Date.now()))
+        savePlayData(localStorage, next)
+        return next
+      })
+    }, 30)
+    return () => clearTimeout(t)
+  }, [hand])
+
   const act = (a: Action) => setHand((h) => (a.type === 'fold' ? finishWithBots(applyAction(h, a)) : applyAction(h, a)))
 
   const nextHand = () => {
     setHandNo((n) => n + 1)
+    setReview(null)
     setHand(dealHand(handNo + 1))
   }
 
@@ -65,6 +93,11 @@ export function Play() {
     } catch {
       // Preference just won't persist.
     }
+  }
+
+  const clearHistory = () => {
+    clearPlayData(localStorage)
+    setData(loadPlayData(localStorage))
   }
 
   const result = hand.result
@@ -82,45 +115,67 @@ export function Play() {
         </strong>
       </p>
 
-      <label className="pa-toggle">
-        <input type="checkbox" checked={showOdds} onChange={(e) => toggleOdds(e.target.checked)} />
-        แสดง pot odds ระหว่างเล่น
-      </label>
+      <div className="seg" role="tablist" aria-label="มุมมอง">
+        <button role="tab" aria-selected={view === 'table'} className={view === 'table' ? 'on' : ''} onClick={() => setView('table')}>
+          โต๊ะ
+        </button>
+        <button role="tab" aria-selected={view === 'history'} className={view === 'history' ? 'on' : ''} onClick={() => setView('history')}>
+          ประวัติและสถิติ
+        </button>
+      </div>
 
-      <TableView hand={hand} />
+      {view === 'history' && <PlayHistory data={data} onClear={clearHistory} />}
 
-      {!result && heroTurn && <ActionBar key={hand.actions.length} hand={hand} showOdds={showOdds} onAction={act} />}
-      {!result && !heroTurn && (
-        <p className="pa-wait" role="status">
-          รอ {seatName(hand.toAct ?? 0)} ตัดสินใจ…
-        </p>
+      {view === 'table' && (
+        <>
+          <label className="pa-toggle">
+            <input type="checkbox" checked={showOdds} onChange={(e) => toggleOdds(e.target.checked)} />
+            แสดง pot odds ระหว่างเล่น
+          </label>
+
+          <TableView hand={hand} />
+
+          {!result && heroTurn && <ActionBar key={hand.actions.length} hand={hand} showOdds={showOdds} onAction={act} />}
+          {!result && !heroTurn && (
+            <p className="pa-wait" role="status">
+              รอ {seatName(hand.toAct ?? 0)} ตัดสินใจ…
+            </p>
+          )}
+
+          {result && (
+            <div className={`feedback ${heroNet < 0 ? 'wrong' : ''}`} role="status">
+              <strong>
+                {heroNet > 0 ? `คุณชนะ +${bb(heroNet)}bb` : heroNet < 0 ? `คุณเสีย ${bb(heroNet)}bb` : 'คุณเสมอตัว 0bb'}
+              </strong>
+              <p>
+                ผู้ชนะ: {result.winners.map(seatName).join(', ')}
+                {result.showdown ? ' (เปิดไพ่)' : ' (คนอื่น fold หมด)'}
+              </p>
+              <button className="primary" onClick={nextHand} autoFocus>
+                เริ่มมือใหม่
+              </button>
+            </div>
+          )}
+
+          {result && !review && (
+            <p className="pa-wait" role="status">
+              กำลังวิเคราะห์มือนี้…
+            </p>
+          )}
+          {result && review && <ReviewPanel review={review} />}
+
+          <details className="pt-log">
+            <summary>ประวัติการเล่นมือนี้</summary>
+            <ol>
+              {describeActions(hand.actions).map(({ record, text }, i) => (
+                <li key={i}>
+                  <span className="muted">{record.street}</span> {seatName(record.seat)} {text}
+                </li>
+              ))}
+            </ol>
+          </details>
+        </>
       )}
-
-      {result && (
-        <div className={`feedback ${heroNet < 0 ? 'wrong' : ''}`} role="status">
-          <strong>
-            {heroNet > 0 ? `คุณชนะ +${bb(heroNet)}bb` : heroNet < 0 ? `คุณเสีย ${bb(heroNet)}bb` : 'คุณเสมอตัว 0bb'}
-          </strong>
-          <p>
-            ผู้ชนะ: {result.winners.map(seatName).join(', ')}
-            {result.showdown ? ' (เปิดไพ่)' : ' (คนอื่น fold หมด)'}
-          </p>
-          <button className="primary" onClick={nextHand} autoFocus>
-            เริ่มมือใหม่
-          </button>
-        </div>
-      )}
-
-      <details className="pt-log">
-        <summary>ประวัติการเล่นมือนี้</summary>
-        <ol>
-          {describeActions(hand.actions).map(({ record, text }, i) => (
-            <li key={i}>
-              <span className="muted">{record.street}</span> {seatName(record.seat)} {text}
-            </li>
-          ))}
-        </ol>
-      </details>
     </section>
   )
 }

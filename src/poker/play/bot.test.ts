@@ -1,28 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { parseCards } from '../cards'
-import { fullDeck } from '../cards'
 import { mulberry32 } from '../equity'
 import { actionProbabilities, chooseAction, sameAction } from './bot'
 import type { WeightedAction } from './bot'
 import { START_STACK, applyAction, legalActions, newHand, potOf } from './engine'
 import type { Action, HandState } from './engine'
+import { check, fold, raise, setup } from './testing'
 
-const fold: Action = { type: 'fold' }
-const check: Action = { type: 'check' }
-const raise = (to: number): Action => ({ type: 'raise', to })
 const play = (s: HandState, ...actions: Action[]) => actions.reduce(applyAction, s)
-
-/** Button on seat 0. Gives `seat` the given hole cards, fills the other seats with unused cards. */
-function setup(seat: number, hole: string, board = 'Js 7d 2c 9h Kd'): HandState {
-  const mine = parseCards(hole)
-  const boardCards = parseCards(board)
-  const used = new Set([...mine, ...boardCards])
-  const spare = fullDeck().filter((c) => !used.has(c))
-  const holes = Array.from({ length: 6 }, (_, i) =>
-    i === seat ? (mine as [number, number]) : ([spare.pop()!, spare.pop()!] as [number, number]),
-  )
-  return newHand({ button: 0, seed: 1, deal: { holes, board: boardCards } })
-}
 
 const probOf = (ps: WeightedAction[], pred: (a: Action) => boolean) =>
   ps.filter((x) => pred(x.action)).reduce((n, x) => n + x.p, 0)

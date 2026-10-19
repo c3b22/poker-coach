@@ -83,19 +83,32 @@ const CALL_VS: Record<Position, number> = { UTG: 9, HJ: 8.5, CO: 8, BTN: 7, SB: 
 const RAISE_VS: Record<Position, number> = { UTG: 12, HJ: 12, CO: 11, BTN: 10, SB: 10, BB: 10 }
 
 const rfiCache = new Map<Position, Set<HandClass>>()
-const rfiOf = (pos: (typeof RFI_POSITIONS)[number]) => {
+/** The textbook first-in range for a position, parsed once. */
+export const rfiOf = (pos: (typeof RFI_POSITIONS)[number]) => {
   let r = rfiCache.get(pos)
   if (!r) rfiCache.set(pos, (r = rfiRange(pos)))
   return r
 }
 let spots: FacingOpenSpot[] | null = null
+/** The range table for `hero` facing an open from `villain`, if we have one. */
+export function facingSpot(hero: Position, villain: Position): FacingOpenSpot | undefined {
+  spots ??= facingOpenSpots()
+  return spots.find((s) => s.hero === hero && s.villain === villain)
+}
+
+/** Raises so far this preflop, and how many players have called (limped or cold-called). */
+export function preflopContext(state: HandState) {
+  const preActions = state.actions.filter((a) => a.street === 'preflop')
+  return {
+    raises: preActions.filter((a) => a.type === 'raise'),
+    calls: preActions.filter((a) => a.type === 'call').length,
+  }
+}
 
 function preflop(state: HandState, la: LegalActions, hole: [Card, Card]): WeightedAction[] {
   const pos = positionOf(la.seat, state.button)
   const cls = handClassOfHole(...hole)
-  const preActions = state.actions.filter((a) => a.street === 'preflop')
-  const raises = preActions.filter((a) => a.type === 'raise')
-  const limpers = preActions.filter((a) => a.type === 'call').length
+  const { raises, calls: limpers } = preflopContext(state)
 
   if (raises.length === 0 && limpers === 0) {
     const inRange = pos !== 'BB' && rfiOf(pos).has(cls)
@@ -120,8 +133,7 @@ function limpedPot(la: LegalActions, pos: Position, cls: HandClass, limpers: num
 }
 
 function facingOpen(state: HandState, la: LegalActions, pos: Position, cls: HandClass, opener: Position): WeightedAction[] {
-  spots ??= facingOpenSpots()
-  const spot = spots.find((s) => s.hero === pos && s.villain === opener)
+  const spot = facingSpot(pos, opener)
   let kind: 'raise' | 'call' | 'fold'
   if (spot) {
     kind = preflopAction(cls, spot)

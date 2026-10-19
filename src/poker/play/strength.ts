@@ -21,7 +21,7 @@ export function chenScore(cls: HandClass): number {
   return Math.ceil(score)
 }
 
-const comboKey = (a: Card, b: Card) => (a < b ? a * 52 + b : b * 52 + a)
+export const comboKey = (a: Card, b: Card) => (a < b ? a * 52 + b : b * 52 + a)
 
 const FLUSH_DRAW_BONUS = 0.25
 const OPEN_ENDED_BONUS = 0.2
