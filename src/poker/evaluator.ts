@@ -22,7 +22,7 @@ const pack = (category: Category, ranks: number[]) =>
   ranks.reduce((acc, r) => acc * 13 + r, 0) + category * BASE
 
 // Highest rank of a straight in the given rank bitmask (bit 12 = ace), or -1. Wheel counts as 3 (five-high).
-function straightHigh(mask: number): number {
+export function straightHigh(mask: number): number {
   for (let high = 12; high >= 4; high--) {
     const run = 0b11111 << (high - 4)
     if ((mask & run) === run) return high

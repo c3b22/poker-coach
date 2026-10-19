@@ -1,6 +1,8 @@
 // Ranges are sets of hand classes such as "AA", "AKs", "T9o". Written in the usual
 // shorthand: "22+, A2s+, KTs+, 98s-65s, ATo+, 66-88".
 
+import { type Card, rankOf, suitOf } from './cards'
+
 export type HandClass = string
 
 /** Ranks from strongest to weakest; the index is also the row/column in the 13x13 grid. */
@@ -84,6 +86,13 @@ export function comboCount(range: Set<HandClass>): number {
 export function handClassAt(row: number, col: number): HandClass {
   if (row === col) return make(row, col, '')
   return row < col ? make(row, col, 's') : make(col, row, 'o')
+}
+
+/** The hand class of two concrete cards, e.g. As Kd -> "AKo". */
+export function handClassOfHole(a: Card, b: Card): HandClass {
+  const [hi, lo] = rankOf(a) >= rankOf(b) ? [a, b] : [b, a]
+  const suffix = rankOf(a) === rankOf(b) ? '' : suitOf(a) === suitOf(b) ? 's' : 'o'
+  return make(12 - rankOf(hi), 12 - rankOf(lo), suffix)
 }
 
 export function handClassGrid(): HandClass[][] {

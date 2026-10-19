@@ -2,6 +2,8 @@ import { POSTFLOP_QUESTIONS } from '../data/postflop-questions'
 import { cardToString, fullDeck, parseCards } from './cards'
 import { evaluate, categoryOf } from './evaluator'
 import { facingOpenSpots, preflopAction, rfiRange, RFI_POSITIONS } from './preflop'
+import { pick, shuffled } from './random'
+import type { Rng } from './random'
 import { comboCount, handClassGrid } from './range'
 import type { HandClass } from './range'
 
@@ -47,12 +49,9 @@ export interface Question {
   meta?: Record<string, string | number>
 }
 
-type Rng = () => number
-
 const SUITS = 'cdhs'
 const GRID = handClassGrid().flat()
 
-const pick = <T>(items: readonly T[], rng: Rng): T => items[Math.floor(rng() * items.length)]
 const pct = (x: number, digits = 0) => `${(x * 100).toFixed(digits)}%`
 
 /** Concrete hole cards for a hand class such as "AKs" or "77". */
@@ -86,16 +85,6 @@ export function generateQuestion(topic: Topic, rng: Rng): Question {
     case 'pot-odds':
       return potOddsQuestion(rng)
   }
-}
-
-/** Fisher-Yates shuffle of a copy. */
-function shuffled<T>(items: readonly T[], rng: Rng): T[] {
-  const a = items.slice()
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
 }
 
 const dealCards = (n: number, rng: Rng) => shuffled(fullDeck(), rng).slice(0, n).map(cardToString)
