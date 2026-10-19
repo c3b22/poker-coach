@@ -6,6 +6,8 @@ import { PlayingCard } from './PlayingCard'
 
 type Filter = Topic | 'all'
 
+const LETTERS = ['ก', 'ข', 'ค', 'ง', 'จ', 'ฉ']
+
 const accuracy = (correct: number, total: number) => (total ? `${Math.round((correct / total) * 100)}%` : '–')
 
 export function Drill({ initialFilter = 'all' }: { initialFilter?: Filter }) {
@@ -54,7 +56,7 @@ export function Drill({ initialFilter = 'all' }: { initialFilter?: Filter }) {
         {progress.missed.length > 0 && <span className="chip fold">รอทบทวน {progress.missed.length} ข้อ</span>}
       </div>
 
-      <p className="muted">{TOPIC_LABEL[question.topic]}</p>
+      <p className="topic-tag">{TOPIC_LABEL[question.topic]}</p>
       <p className="prompt">{question.prompt}</p>
       {(question.board || question.cards) && (
         <div className="table">
@@ -91,7 +93,10 @@ export function Drill({ initialFilter = 'all' }: { initialFilter?: Filter }) {
           const state = answered === null ? '' : i === question.correct ? 'right' : i === answered ? 'wrong' : 'dim'
           return (
             <button key={c} className={`choice ${state}`} disabled={answered !== null} onClick={() => choose(i)}>
-              {c}
+              <span className="choice-letter" aria-hidden="true">
+                {LETTERS[i]}
+              </span>
+              <span>{c}</span>
             </button>
           )
         })}

@@ -7,8 +7,13 @@ export function PlayingCard({ code }: { code: string }) {
   const red = suit === 'd' || suit === 'h'
   return (
     <span className={`card ${red ? 'red' : 'black'}`} role="img" aria-label={`${rank} of ${SUIT_NAME[suit]}`}>
-      <span className="card-rank">{rank}</span>
-      <span className="card-suit">{SUIT_SYMBOL[suit]}</span>
+      <span className="card-corner" aria-hidden="true">
+        <span className="card-rank">{rank}</span>
+        <span className="card-suit">{SUIT_SYMBOL[suit]}</span>
+      </span>
+      <span className="card-pip" aria-hidden="true">
+        {SUIT_SYMBOL[suit]}
+      </span>
     </span>
   )
 }
