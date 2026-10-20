@@ -41,7 +41,7 @@ function Seat({ hand, player }: { hand: HandState; player: PlayerState }) {
       </div>
       <div className="pt-meta">
         <span>{bb(player.stack)}bb</span>
-        {player.committed > 0 && !hand.result && <span className="pt-bet">bet {bb(player.committed)}</span>}
+        {player.committed > 0 && !hand.result && !status && <span className="pt-bet">bet {bb(player.committed)}</span>}
         {status && <span className="pt-status">{status}</span>}
       </div>
       {showdown && !player.folded && (

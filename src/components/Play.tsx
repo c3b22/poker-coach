@@ -44,6 +44,7 @@ export function Play() {
   const [showOdds, setShowOdds] = useState(() => readFlag(ODDS_KEY))
   const [data, setData] = useState(() => loadPlayData(localStorage))
   const [review, setReview] = useState<HandReview | null>(null)
+  const tableRef = useRef<HTMLDivElement>(null)
   const counted = useRef<number | null>(null)
   const reviewed = useRef<number | null>(null)
 
@@ -84,6 +85,8 @@ export function Play() {
     setHandNo((n) => n + 1)
     setReview(null)
     setHand(dealHand(handNo + 1))
+    // Bring the fresh table fully into view so the whole hand fits on screen.
+    tableRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }
 
   const toggleOdds = (on: boolean) => {
@@ -105,15 +108,24 @@ export function Play() {
   const heroTurn = hand.toAct === HERO
 
   return (
-    <section className="panel">
-      <h2>เล่นจริง</h2>
-      <p className="muted">
-        เล่นทีละมือกับบอท 5 ตัว ชิปจำลอง stack 100bb ทุกมือ · มือที่ {session.hands + (result ? 0 : 1)} · ผลรวม session{' '}
-        <strong>
-          {session.net >= 0 ? '+' : ''}
-          {bb(session.net)}bb
-        </strong>
-      </p>
+    <section className="panel play">
+      <h2 className="pa-title">เล่นจริง</h2>
+      <div className="pa-head">
+        <p className="muted">
+          <span className="pa-desc">เล่นทีละมือกับบอท 5 ตัว ชิปจำลอง stack 100bb ทุกมือ · </span>มือที่ {session.hands + (result ? 0 : 1)} ·
+          ผลรวม session{' '}
+          <strong>
+            {session.net >= 0 ? '+' : ''}
+            {bb(session.net)}bb
+          </strong>
+        </p>
+        {view === 'table' && (
+          <label className="pa-toggle">
+            <input type="checkbox" checked={showOdds} onChange={(e) => toggleOdds(e.target.checked)} />
+            แสดง pot odds
+          </label>
+        )}
+      </div>
 
       <div className="seg" role="tablist" aria-label="มุมมอง">
         <button role="tab" aria-selected={view === 'table'} className={view === 'table' ? 'on' : ''} onClick={() => setView('table')}>
@@ -128,34 +140,33 @@ export function Play() {
 
       {view === 'table' && (
         <>
-          <label className="pa-toggle">
-            <input type="checkbox" checked={showOdds} onChange={(e) => toggleOdds(e.target.checked)} />
-            แสดง pot odds ระหว่างเล่น
-          </label>
+          <div ref={tableRef} className="pt-wrap">
+            <TableView hand={hand} />
+          </div>
 
-          <TableView hand={hand} />
-
-          {!result && heroTurn && <ActionBar key={hand.actions.length} hand={hand} showOdds={showOdds} onAction={act} />}
-          {!result && !heroTurn && (
-            <p className="pa-wait" role="status">
-              รอ {seatName(hand.toAct ?? 0)} ตัดสินใจ…
-            </p>
-          )}
-
-          {result && (
-            <div className={`feedback ${heroNet < 0 ? 'wrong' : ''}`} role="status">
-              <strong>
-                {heroNet > 0 ? `คุณชนะ +${bb(heroNet)}bb` : heroNet < 0 ? `คุณเสีย ${bb(heroNet)}bb` : 'คุณเสมอตัว 0bb'}
-              </strong>
-              <p>
-                ผู้ชนะ: {result.winners.map(seatName).join(', ')}
-                {result.showdown ? ' (เปิดไพ่)' : ' (คนอื่น fold หมด)'}
+          <div className="pa-dock">
+            {!result && heroTurn && <ActionBar key={hand.actions.length} hand={hand} showOdds={showOdds} onAction={act} />}
+            {!result && !heroTurn && (
+              <p className="pa-wait" role="status">
+                รอ {seatName(hand.toAct ?? 0)} ตัดสินใจ…
               </p>
-              <button className="primary" onClick={nextHand} autoFocus>
-                เริ่มมือใหม่
-              </button>
-            </div>
-          )}
+            )}
+
+            {result && (
+              <div className={`feedback ${heroNet < 0 ? 'wrong' : ''}`} role="status">
+                <strong>
+                  {heroNet > 0 ? `คุณชนะ +${bb(heroNet)}bb` : heroNet < 0 ? `คุณเสีย ${bb(heroNet)}bb` : 'คุณเสมอตัว 0bb'}
+                </strong>
+                <p>
+                  ผู้ชนะ: {result.winners.map(seatName).join(', ')}
+                  {result.showdown ? ' (เปิดไพ่)' : ' (คนอื่น fold หมด)'}
+                </p>
+                <button className="primary" onClick={nextHand} autoFocus>
+                  เริ่มมือใหม่
+                </button>
+              </div>
+            )}
+          </div>
 
           {result && !review && (
             <p className="pa-wait" role="status">

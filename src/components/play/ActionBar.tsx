@@ -13,6 +13,7 @@ export function ActionBar({
   onAction: (a: Action) => void
 }) {
   const [custom, setCustom] = useState('')
+  const [customOpen, setCustomOpen] = useState(false)
   const la = legalActions(hand)
   if (!la) return null
 
@@ -24,6 +25,7 @@ export function ActionBar({
 
   const send = (a: Action) => {
     setCustom('')
+    setCustomOpen(false)
     onAction(a)
   }
 
@@ -60,6 +62,10 @@ export function ActionBar({
           <button className="primary" onClick={() => send({ type: 'raise', to: la.maxRaiseTo })}>
             All-in <small>({bb(la.maxRaiseTo)}bb)</small>
           </button>
+          <button className="choice" aria-expanded={customOpen} onClick={() => setCustomOpen((o) => !o)}>
+            อื่นๆ
+          </button>
+          {customOpen && (
           <form
             className="pa-custom"
             onSubmit={(e) => {
@@ -76,6 +82,7 @@ export function ActionBar({
                 min={la.minRaiseTo / BIG_BLIND}
                 max={la.maxRaiseTo / BIG_BLIND}
                 placeholder={`${bb(la.minRaiseTo)}–${bb(la.maxRaiseTo)}`}
+                autoFocus
                 value={custom}
                 onChange={(e) => setCustom(e.target.value)}
               />
@@ -85,6 +92,7 @@ export function ActionBar({
               ยืนยัน
             </button>
           </form>
+          )}
         </div>
       )}
     </div>

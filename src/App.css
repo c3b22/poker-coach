@@ -1242,3 +1242,255 @@ button:disabled {
 .ph-clear {
   margin-top: 20px;
 }
+
+/* ---------- play: compact table that fits a phone screen ---------- */
+.pa-dock {
+  margin-top: 8px;
+}
+
+@media (max-width: 679px) {
+  .play {
+    padding: 12px;
+  }
+
+  .pa-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .pa-desc {
+    display: none;
+  }
+
+  .play > .muted {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+  }
+
+  .pa-toggle {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+  }
+
+  .pt {
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      's1 s2 s3'
+      's4 s5 pot'
+      'board board board'
+      's0 s0 s0';
+  }
+
+  .pt-board {
+    display: contents;
+  }
+
+  .pt-board > .pt-cards {
+    grid-area: board;
+    justify-content: center;
+    min-height: 54px;
+  }
+
+  .pt-board .card,
+  .pt-s0 .card {
+    zoom: 0.8;
+  }
+
+  .pt-pot {
+    grid-area: pot;
+    align-self: center;
+    justify-self: center;
+    padding: 2px 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .pt-seat {
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 3px;
+    padding: 6px 8px;
+  }
+
+  .pt-seat .card {
+    zoom: 0.4;
+  }
+
+  .pt-head {
+    gap: 4px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .pt-pos {
+    padding: 0 6px;
+    font-size: 0.7rem;
+  }
+
+  .pt-dealer {
+    width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+  }
+
+  .pt-cards {
+    gap: 3px;
+  }
+
+  .pt-meta {
+    flex-direction: column;
+    gap: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .pt-s0 {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+  }
+
+  .pt-s0 .pt-meta {
+    flex-direction: row;
+    gap: 2px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Actions stay on screen, just above the bottom tab bar, while the table scrolls. */
+  .pa-dock {
+    position: sticky;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
+    z-index: 5;
+    margin: 8px -4px 0;
+    padding: 8px;
+    border-radius: var(--radius);
+    background: var(--sheet);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 -6px 16px rgb(20 33 61 / 10%);
+  }
+
+  .pa-dock:empty {
+    display: none;
+  }
+
+  .pa {
+    gap: 6px;
+    margin-top: 0;
+  }
+
+  .pa-main {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 6px;
+  }
+
+  .pa .primary,
+  .pa .choice {
+    min-height: 40px;
+    padding: 0 8px;
+  }
+
+  .pa-raise {
+    gap: 6px;
+  }
+
+  .pa-wait {
+    margin: 0;
+    text-align: center;
+  }
+
+  .pa-dock .feedback {
+    margin: 0;
+    padding: 10px 12px;
+  }
+
+  .pa-dock .feedback p {
+    margin: 2px 0 8px;
+  }
+}
+
+.pt-wrap {
+  scroll-margin-top: 84px;
+}
+
+@media (max-width: 679px) {
+  .pa-label {
+    display: none;
+  }
+
+  /* Raise sizes sit in one even row; the custom amount opens on demand. */
+  .pa-raise {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+
+  .pa-raise .primary,
+  .pa-raise .choice {
+    min-width: 0;
+    padding: 0 2px;
+    font-size: 0.85rem;
+    line-height: 1.15;
+  }
+
+  .pa-raise .primary small {
+    display: block;
+  }
+
+  .pa-custom {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.pa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 4px;
+}
+
+.pa-head .muted {
+  margin: 4px 0;
+}
+
+.pa-head .pa-toggle {
+  margin: 0;
+}
+
+@media (max-width: 679px) {
+  .pa-head {
+    flex-wrap: nowrap;
+    margin-bottom: 6px;
+  }
+
+  .pa-head .muted {
+    margin: 0;
+  }
+
+  .pa-head .pa-toggle {
+    flex: none;
+    font-size: 0.8rem;
+  }
+
+  .pt-board > .pt-cards {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 679px) {
+  .pt-seat.pt-s0 .card {
+    zoom: 0.85;
+  }
+}
